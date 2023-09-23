@@ -1,0 +1,95 @@
+<div class="row">
+    <div class="col">
+        <h1 class="text-center">지역검색</h1>
+        <div class="row mb-2 justify-content-end">
+            <form name="frm" class="col-6 col-md-4 col-lg-3">
+                <div class="input-group">
+                    <input name="query" class="form-control" value="인하대학교">
+                    <button class="btn btn-primary">검색</button>
+                </div>
+            </form>
+        </div>
+        
+        <div id ="div_locals"></div>
+        <div class="text-center">
+            <button id="prev" class="btn btn-primary">이전</button>
+            <span id="span_page" class="mx-3">1/10</span>
+            <button id="next" class="btn btn-primary">다음</button>
+        </div>
+        <div id="map" style="width:100%;height:400px;" class="my-5" ></div>
+    </div>
+</div>
+
+<script type="x-handlebars-template" id="temp_locals">
+    <table class="table table-primary">
+        {{#each documents}}
+        <tr>
+            <td>{{place_name}}</td>
+            <td>{{address_name}}</td>
+            <td>{{phone}}</td>
+            <td><button class="btn btn-primary" x="{{x}}" y="{{y}}">위치보기</button></td>
+        </tr>
+        {{/each}}
+    </table>
+
+</script>
+
+<script>
+    let query=$(frm.query).val();
+    let page=1;
+    let size=5;
+    getLocals();
+    $("#div_locals").on("click","button",function(){
+        let x=$(this).attr("x");
+        let y=$(this).attr("y");
+        var container = document.getElementById('map');
+		var options = {
+			center: new kakao.maps.LatLng(y,x),
+			level: 3
+		};
+
+		var map = new kakao.maps.Map(container, options);
+        var map = new kakao.maps.Map(container, options); //지도 생성 및 객체 리턴
+        var markerPosition  = new kakao.maps.LatLng(y, x);  // 마커가 표시될 위치입니다 
+        var marker = new kakao.maps.Marker({  // 마커를 생성합니다
+            position: markerPosition
+        });
+        marker.setMap(map);  // 마커가 지도 위에 표시되도록 설정합니다
+
+    });
+
+    $(frm).on("submit", function(e) {
+        e.preventDefault(); //submit 이벤트를 막아준다.
+        page=1;
+        query=$(frm.query).val();
+        getLocals();
+    });
+    $("#next").on("click",function(){
+        page++;
+        getLocals();
+    });
+    $("#prev").on("click",function(){
+        page--;
+        getLocals();
+    });
+    function getLocals(){
+        $.ajax({
+            type:"get",
+            url:"https://dapi.kakao.com/v2/local/search/keyword.json",
+            headers:{"Authorization": "KakaoAK 8e8eec9ee1ee5b5e6c42f60456493d98"},
+            data:{query: query,page:page, size:size},
+            success:function(data){
+                let temp=Handlebars.compile($("#temp_locals").html());
+                $("#div_locals").html(temp(data));
+                console.log(data);
+                let last = Math.ceil(data.meta.pageable_count/size);
+                
+                $("#span_page").html(page+"/"+last);
+                if(page==1)$("#prev").attr("disabled", true)
+                else $("#prev").attr("disabled",false);
+                if(data.meta.is_end) $("#next").attr("disabled",true)
+                else $("#next").attr("disabled",false)
+            }
+        });
+    }
+</script>

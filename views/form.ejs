@@ -1,3 +1,9 @@
+<style>
+    #div_books img{
+        cursor: pointer;
+    }
+</style>
+
 <div class="row my-5">
     <div class="col">
         <div class="row mb-2 justify-content-end">
@@ -23,12 +29,13 @@
         <div class="col-6 col-md-4 col-lg-2 mb-3">
             <div class="card">
                 <div class="card-body">
-                    <img src="{{check thumbnail}}" width="90%">
+                    <img src="{{check thumbnail}}" width="90%" index="{{@index}}">
                     <div class="ellipsis pt-3" style="font-size:0.8rem;"> {{title}} </div>
                 </div>
                 <div class="card-footer" style="font-size:1.0rem;">{{format price}}</div>
             </div>
         </div>
+        <%-include('books/modal.ejs')%>
     {{/each}}
 </script>
 <script>
@@ -48,6 +55,12 @@
     let page=1;
     getBooks();
     
+//이미지 클릭
+    $("#div_books").on("click","img", function(){
+        let index=$(this).attr("index");
+        $("#modal"+index).modal("show");
+    });
+
     $(frm).on("submit", function(e) {
         e.preventDefault(); //submit 이벤트를 막아준다.
         query=$(frm.query).val();
