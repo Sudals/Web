@@ -2,6 +2,11 @@
     #div_books img{
         cursor: pointer;
     }
+    #div_books .bi{
+        cursor: pointer;
+        color: green;
+        font-size: 1.5rem;
+    }
 </style>
 
 <div class="row my-5">
@@ -32,7 +37,8 @@
                     <img src="{{check thumbnail}}" width="90%" index="{{@index}}">
                     <div class="ellipsis pt-3" style="font-size:0.8rem;"> {{title}} </div>
                 </div>
-                <div class="card-footer" style="font-size:1.0rem;">{{format price}}</div>
+                <div class="card-footer" style="font-size:1.0rem;">{{format price}} <i class="bi bi-cart-fill float-end" book="{{book @this}}"></i></div>
+                
             </div>
         </div>
         <%-include('books/modal.ejs')%>
@@ -49,12 +55,24 @@
     Handlebars.registerHelper("format",function(price){
         return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '원';
     });
+    Handlebars.registerHelper("book",function(book){
+        return JSON.stringify(book);
+    });
 </script>
 <script>
     let query=$(frm.query).val();
     let page=1;
     getBooks();
     
+    $("#div_books").on("click",".bi",function(){
+        if(!sessionStorage.getItem("email")){
+            location.href="/users/login";
+
+        }else{
+            const book=JSON.parse($(this).attr("book"));
+            console.log(book);
+        }
+    });
 //이미지 클릭
     $("#div_books").on("click","img", function(){
         let index=$(this).attr("index");
