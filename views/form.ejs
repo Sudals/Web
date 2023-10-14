@@ -37,7 +37,7 @@
                     <img src="{{check thumbnail}}" width="90%" index="{{@index}}">
                     <div class="ellipsis pt-3" style="font-size:0.8rem;"> {{title}} </div>
                 </div>
-                <div class="card-footer" style="font-size:1.0rem;">{{format price}} <i class="bi bi-cart-fill float-end" book="{{book @this}}"></i></div>
+                <div class="card-footer" style="font-size:1.0rem;">{{format price}} <i class="cart bi bi-cart-fill float-end" book="{{book @this}}"></i></div>
                 
             </div>
         </div>
@@ -59,18 +59,53 @@
         return JSON.stringify(book);
     });
 </script>
-<script>
+<script type="module">
+     import { app } from "/javascripts/firebase.js";
+    import { getDatabase, ref,set,get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+    const db = getDatabase(app);
     let query=$(frm.query).val();
     let page=1;
     getBooks();
     
+    //장바구니 클릭했을때
+    $("#div_books").on("click",".cart",function(){
+        if(!sessionStorage.getItem("email")){
+            alert("로그인이되지 않았슈");
+            location.href="/users/login";
+        }else{
+
+            const book = JSON.parse($(this).attr("book"));
+            const ref_book = ref(db,'cart/'+sessionStorage.getItem("uid")+"/"+book.isbn);
+         //const snapshot = await get(ref_book);
+         //let sn;
+            get(ref_book).then(snap=>{
+                //console.log(snap.val());
+                //n = snap;
+            });
+            //console.log(sn.val());
+            if(false){
+
+                alert("장바구니에 있슈");
+        
+            }else{
+            if(!confirm('장바구니에 담겠슈?')) return;
+
+            
+           
+            set(ref_book,book);
+   
+            alert("도서가 저장됨");
+            }
+        }
+    });
+
     $("#div_books").on("click",".bi",function(){
         if(!sessionStorage.getItem("email")){
             location.href="/users/login";
 
         }else{
             const book=JSON.parse($(this).attr("book"));
-            console.log(book);
+            //console.log(book);
         }
     });
 //이미지 클릭

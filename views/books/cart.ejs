@@ -1,0 +1,48 @@
+<div class="my-5">
+    <h1 class="text-center mb-5">장바바구구구니니니</h1>
+    <div id="div_cart"></div>
+</div>
+
+<script id="temp_cart" type="x-handlebars-template">
+    <table class ="table">
+        {{#each .}}
+            <tr>
+                <td>{{title}}</td>
+                <td>{{authors}}</td>
+                <td>{{price}}</td>
+                <td>{{publisher}}</td>
+                <td><button class="btn-danger btn-sm" isbn="{{isbn}}">삭제</button></td>
+            </tr>
+        {{/each}}
+    </table>
+</script>
+
+<script type="module">
+    import { app } from "/javascripts/firebase.js";
+    import { getDatabase, ref,set,get,onValue ,remove} from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+    const db= getDatabase(app);
+
+    const ref_book=ref(db,'cart/'+sessionStorage.getItem('uid'));
+    
+    onValue(ref_book, snap=>{
+        let rows=[];
+        snap.forEach(row=>{
+            //console.log(row.key,row.val());
+            rows.push(row.val());
+        });
+        const temp=Handlebars.compile($("#temp_cart").html());
+        $("#div_cart").html(temp(rows));
+        console.log(rows);
+    });
+
+//삭제버튼
+$("#div_cart").on("click",".btn-danger",function(){
+    const isbn=$(this).attr("isbn");
+    if(!confirm(`${isbn}도서를 삭제하시겟슈?`)){
+        return;
+    }
+    const ref_book=ref(db,'cart/'+sessionStorage.getItem('uid')+"/"+isbn);
+    remove(ref_book);
+});
+
+</script>
