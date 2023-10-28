@@ -27,7 +27,9 @@
             <td>{{place_name}}</td>
             <td>{{address_name}}</td>
             <td>{{phone}}</td>
+            
             <td><button class="btn btn-primary" x="{{x}}" y="{{y}}">위치보기</button></td>
+            <td><button class="btn btn-primary btn-sm" local="{{toString @this}}">즐겨찾기</button></td>
         </tr>
         {{/each}}
     </table>
@@ -35,6 +37,15 @@
 </script>
 
 <script>
+    Handlebars.registerHelper("toString", function(local){
+        return JSON.stringify(local);
+    });
+</script>
+
+<script type="module">
+     import { app } from "/javascripts/firebase.js";
+    import { getDatabase, ref,set,get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+    const db = getDatabase(app);
     let query=$(frm.query).val();
     let page=1;
     let size=5;
@@ -57,7 +68,24 @@
         marker.setMap(map);  // 마커가 지도 위에 표시되도록 설정합니다
 
     });
+    $("#div_locals").on("click",".btn-sm",async function(){
+        if(!sessionStorage.getItem("email")){
+            sessionStorage.setItem("target","/locals");
+            location.href="/users/login"
+        }else{
+            const local =JSON.parse($(this).attr("local"));
+            const ref_local = `favorite/${sessionStorage.getItem("uid")}/${local.id}`;
+            console.log(ref_local);
+            const snapshot =await get(ref(db,ref_local));
+            if(snapshot.val()){
+                alert("이미 등록되었습니다.");
 
+            }else{
+                set(ref(db,ref_local),local);
+                alert("등록되었습니다.");
+            }
+        }
+    });
     $(frm).on("submit", function(e) {
         e.preventDefault(); //submit 이벤트를 막아준다.
         page=1;
